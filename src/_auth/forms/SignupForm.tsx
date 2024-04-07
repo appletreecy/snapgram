@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import { SignupValidation } from "@/lib/validation"
 import { Loader } from "lucide-react"
-import { useCreateUserAccountMutation, useSignInAccount } from "@/lib/react-query/queriesAndMutations";
+import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations";
 import { useUserContext } from "@/context/AuthContext";
 
 
@@ -27,9 +27,9 @@ const SignupForm = () => {
     const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
     const navigate = useNavigate();
 
-    const { mutateAsync: createUserAccount, isPending: isCreatingAccount } = useCreateUserAccountMutation();
+    const { mutateAsync: createUserAccount, isLoading: isCreatingAccount } = useCreateUserAccount();
 
-    const { mutateAsync: signInAccount, isPending: isSigningIn } = useSignInAccount();
+    const { mutateAsync: signInAccount, isLoading: isSigningIn } = useSignInAccount();
 
 
     // 1. Define your form.
@@ -48,7 +48,7 @@ const SignupForm = () => {
         const newUser = await createUserAccount(values);
 
         if (!newUser) {
-            return toast({ title: 'Sign up failed. Please try again.' })
+            return toast({ title: 'line 51 - Sign up failed. Please try again.' })
         }
 
         const session = await signInAccount({
@@ -62,12 +62,14 @@ const SignupForm = () => {
 
         const isLoggedIn = await checkAuthUser();
 
+        console.log(isLoggedIn)
+
         if (isLoggedIn) {
             form.reset();
 
             navigate('/');
         } else {
-            return toast({ title: 'Sign up failed. Please try again.' })
+            return toast({ title: 'line 70-- Sign up failed. Please try again.' })
         }
     }
 
