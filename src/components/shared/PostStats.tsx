@@ -1,6 +1,7 @@
 import { useDeleteSavedPost, useGetCurrentUser, useLikePost, useSavePost } from "@/lib/react-query/queriesAndMutations";
 import { checkIsLiked } from "@/lib/utils";
 import { Models } from "appwrite"
+import { Loader } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
 type PostStatsProps = {
@@ -16,11 +17,14 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
 
     const { mutate: likePost } = useLikePost();
     const { mutate: savePost, isLoading: isSavingPost } = useSavePost();
-    const { mutate: deleteSavedPost } = useDeleteSavedPost();
+    const { mutate: deleteSavedPost, isLoading: isDeletingSaved } = useDeleteSavedPost();
 
     const { data: currentUser } = useGetCurrentUser();
 
-    const savedPostRecord = currentUser?.save.find((record: Models.Document) => record.post.$id === post.$id);
+
+    const savedPostRecord = currentUser?.save.find(
+        (record: Models.Document) => record.post.$id === post.$id
+    );
 
     useEffect(() => {
         setIsSaved(!!savedPostRecord)
@@ -51,13 +55,11 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
 
         if (savedPostRecord) {
             setIsSaved(false);
-            deleteSavedPost(savedPostRecord.$id)
-
-            return;
+            deleteSavedPost(savedPostRecord.$id);
+        } else {
+            savePost({ userId: userId, postId: post.$id });
+            setIsSaved(true);
         }
-
-        savePost({ postId: post.$id, userId })
-        setIsSaved(true);
     }
 
 
@@ -69,7 +71,9 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
             </div>
 
             <div className="flex gap-2">
-                <img src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"} alt="save" width={20} height={20} onClick={handleSavePost} className="cursor-pointer" />
+                {isSavingPost || isDeletingSaved ? <Loader /> :
+                    <img src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"} alt="save" width={20} height={20} onClick={handleSavePost} className="cursor-pointer" />
+                }
             </div>
         </div>
     )
